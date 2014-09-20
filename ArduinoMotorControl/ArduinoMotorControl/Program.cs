@@ -21,8 +21,9 @@ namespace MotorKeyControl
 	{
 		static byte[] buffer = new byte[1];
 		static SerialPort port;
-		const Mode mode = Mode.Socket;
+		static Mode mode = Mode.Socket;
 		static ICommandReceiver receiver;
+		static bool test = false;
 
 		public static void Main(string[] args) 
 		{
@@ -39,8 +40,10 @@ namespace MotorKeyControl
 				return;
 			}
 
-			port = new SerialPort("/dev/tty.usbmodem1421", 9600);
-			port.Open();
+			if (!test) {
+				port = new SerialPort ("/dev/tty.usbmodem1421", 9600);
+				port.Open ();
+			}
 
 			try {
 				CancellationTokenSource cancelStop = null;
@@ -77,12 +80,15 @@ namespace MotorKeyControl
 
 		static void Send(char c)
 		{
-			//Console.WriteLine(c);
-			buffer[0] = (byte)(int)c;
-			try {
-				port.Write(buffer, 0, 1);
-			} catch (Exception e) {
-				Console.WriteLine("Send('{0}'): {1}", c, e.Message);
+			if (test)
+				Console.WriteLine ("Send({0})", c);
+			else {
+				buffer[0] = (byte)(int)c;
+				try {
+					port.Write(buffer, 0, 1);
+				} catch (Exception e) {
+					Console.WriteLine ("Send('{0}'): {1}", c, e.Message);
+				}
 			}
 		}
 	}
@@ -140,7 +146,7 @@ namespace MotorKeyControl
 			this.socket = new Socket(AddressFamily.InterNetwork, 
 				SocketType.Stream, ProtocolType.Tcp);
 
-			IPAddress ipAddress = IPAddress.Parse("192.168.1.10");
+			IPAddress ipAddress = IPAddress.Parse("192.168.1.104");
 			IPEndPoint ipe = new IPEndPoint(ipAddress,11000);
 			try {
 				socket.Connect(ipe);
@@ -154,7 +160,7 @@ namespace MotorKeyControl
 		{
 			char cmd = 'Q';
 
-			int i = socket.Receive (buffer, 1, 1, SocketFlags.None);
+			int i = socket.Receive (buffer, 0, 1, SocketFlags.None);
 			if (i > 0)
 				cmd = (char)(int)buffer [0];
 

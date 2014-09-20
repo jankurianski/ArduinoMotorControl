@@ -1,4 +1,5 @@
 
 *.userprefs
-bin/
 obj/
+
+*.mdb
