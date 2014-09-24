@@ -15,13 +15,14 @@ namespace MotorKeyControl
 	/// 
 	/// Two modes:
 	///   Keyboard: shows a console where you can use W A S D to drive
-	///             the robot
+	///             the robot.
+    ///   Socket:   connects to a server to listen for W A S D commands.
 	/// </summary>
 	class MainClass
 	{
 		static byte[] buffer = new byte[1];
 		static SerialPort port;
-		static Mode mode = Mode.Socket;
+        static Mode mode = Mode.Keyboard;
 		static ICommandReceiver receiver;
 		static bool test = false;
 
@@ -81,7 +82,7 @@ namespace MotorKeyControl
 		static void Send(char c)
 		{
 			if (test)
-				Console.WriteLine ("Send({0})", c);
+				Console.WriteLine("Send({0})", c);
 			else {
 				buffer[0] = (byte)(int)c;
 				try {
@@ -93,12 +94,14 @@ namespace MotorKeyControl
 		}
 	}
 
-	interface ICommandReceiver {
+	interface ICommandReceiver
+    {
 		char BlockUntilNextCmd();
-		bool AnotherCommand ();
+		bool AnotherCommand();
 	}
 
-	class KeyboardCommandReceiver : ICommandReceiver {
+	class KeyboardCommandReceiver : ICommandReceiver
+    {
 		ConsoleKeyInfo cki;
 
 		public KeyboardCommandReceiver()
@@ -137,7 +140,8 @@ namespace MotorKeyControl
 		}
 	}
 
-	class SocketCommandReceiver : ICommandReceiver {
+	class SocketCommandReceiver : ICommandReceiver
+    {
 		Socket socket;
 		byte[] buffer = new byte[1];
 
@@ -146,7 +150,7 @@ namespace MotorKeyControl
 			this.socket = new Socket(AddressFamily.InterNetwork, 
 				SocketType.Stream, ProtocolType.Tcp);
 
-			IPAddress ipAddress = IPAddress.Parse("192.168.1.104");
+			IPAddress ipAddress = IPAddress.Parse("192.168.1.101");
 			IPEndPoint ipe = new IPEndPoint(ipAddress,11000);
 			try {
 				socket.Connect(ipe);
@@ -157,23 +161,24 @@ namespace MotorKeyControl
 		}
 
 		public char BlockUntilNextCmd()
-		{
-			char cmd = 'Q';
+        {
+            char cmd = 'Q';
 
-			int i = socket.Receive (buffer, 0, 1, SocketFlags.None);
-			if (i > 0)
-				cmd = (char)(int)buffer [0];
+            int i = socket.Receive(buffer, 0, 1, SocketFlags.None);
+            if (i > 0)
+                cmd = (char)(int)buffer[0];
 
-			return cmd;
-		}
+            return cmd;
+        }
 
-		public bool AnotherCommand ()
+		public bool AnotherCommand()
 		{
 			return socket.Connected;
 		}
 	}
 
-	enum Mode {
+	enum Mode
+    {
 		Keyboard,
 		Socket
 	}

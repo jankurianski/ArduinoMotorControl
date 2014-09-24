@@ -4,6 +4,9 @@ using System.Net;
 
 namespace ArduinoMotorServer
 {
+    /// <summary>
+    /// 
+    /// </summary>
 	class MainClass
 	{
 		static Socket socket;
